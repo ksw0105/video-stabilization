@@ -6,7 +6,6 @@
   <title>네온 세븐 세그먼트 시계 & 달력</title>
   <style>
     :root {
-      /* 기본 네온 색상 */
       --neon-color: #00ffcc; 
     }
 
@@ -21,34 +20,30 @@
       transition: background-color 0.3s ease;
     }
 
-    /* 테마 자동 전환 (다크/라이트 모드) */
     @media (prefers-color-scheme: light) {
-      body {
-        background-color: #f5f5f5;
-      }
-      .segment {
-        opacity: 0.2 !important; 
-      }
+      body { background-color: #f5f5f5; }
+      .segment { opacity: 0.2 !important; }
       #controls {
         background: rgba(255, 255, 255, 0.9) !important;
         color: #333 !important;
         border: 1px solid #ddd;
       }
-      #controls div {
-        color: #666 !important;
+      #controls div { color: #666 !important; }
+      /* 라이트 모드 버튼 스타일 */
+      #resetBtn {
+        background-color: #eee !important;
+        color: #333 !important;
+        border: 1px solid #ccc !important;
       }
+      #resetBtn:hover { background-color: #ddd !important; }
     }
 
-    /* --- 마우스 & UI 자동 숨김 처리 (idle 상태) --- */
-    body.idle {
-      cursor: none !important; /* 마우스 커서 숨김 */
-    }
-    body.idle #widget-container {
-      cursor: none !important; /* 위젯 위에서도 커서 숨김 */
-    }
+    /* 마우스 & UI 자동 숨김 처리 */
+    body.idle { cursor: none !important; }
+    body.idle #widget-container { cursor: none !important; }
     body.idle #controls {
-      opacity: 0 !important; /* 설정창 숨김 */
-      pointer-events: none; /* 숨겨진 상태에서는 클릭 방지 */
+      opacity: 0 !important; 
+      pointer-events: none; 
     }
 
     /* 설정 패널 */
@@ -61,9 +56,15 @@
       padding: 15px;
       border-radius: 8px;
       z-index: 100;
-      opacity: 1; /* 기본적으로는 보임 */
+      opacity: 1; 
       transition: opacity 0.5s ease-in-out;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .controls-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
 
     #controls label {
@@ -82,6 +83,21 @@
       background: none;
     }
 
+    /* 위치 초기화 버튼 스타일 */
+    #resetBtn {
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #555;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+    #resetBtn:hover { background-color: #555; }
+
     /* 드래그 및 전체 묶음 컨테이너 */
     #widget-container {
       position: absolute;
@@ -98,9 +114,7 @@
       touch-action: none; 
     }
 
-    #widget-container:active {
-      cursor: grabbing;
-    }
+    #widget-container:active { cursor: grabbing; }
 
     /* 날짜 스타일 */
     #date-display {
@@ -108,10 +122,7 @@
       font-weight: 700;
       letter-spacing: 3px;
       color: var(--neon-color);
-      text-shadow: 
-        0 0 5px #fff,
-        0 0 15px var(--neon-color),
-        0 0 30px var(--neon-color);
+      text-shadow: 0 0 5px #fff, 0 0 15px var(--neon-color), 0 0 30px var(--neon-color);
     }
 
     /* 시계 7세그먼트 묶음 */
@@ -122,13 +133,7 @@
     }
 
     /* 세븐 세그먼트 물리적 구조 CSS */
-    .digit {
-      position: relative;
-      width: 60px;
-      height: 110px;
-      margin: 0 2px;
-    }
-
+    .digit { position: relative; width: 60px; height: 110px; margin: 0 2px; }
     .segment {
       position: absolute;
       background-color: var(--neon-color);
@@ -136,15 +141,10 @@
       opacity: 0.1; 
       transition: opacity 0.05s, box-shadow 0.05s;
     }
-
     .segment.on {
       opacity: 1 !important;
-      box-shadow: 
-        0 0 5px #fff,
-        0 0 15px var(--neon-color),
-        0 0 30px var(--neon-color);
+      box-shadow: 0 0 5px #fff, 0 0 15px var(--neon-color), 0 0 30px var(--neon-color);
     }
-
     .seg-a { top: 0; left: 10px; width: 40px; height: 10px; }
     .seg-b { top: 10px; right: 0; width: 10px; height: 40px; }
     .seg-c { top: 60px; right: 0; width: 10px; height: 40px; }
@@ -154,12 +154,7 @@
     .seg-g { top: 50px; left: 10px; width: 40px; height: 10px; }
 
     /* 콜론(:) */
-    .colon {
-      position: relative;
-      width: 20px;
-      height: 110px;
-    }
-
+    .colon { position: relative; width: 20px; height: 110px; }
     .dot {
       position: absolute;
       left: 5px;
@@ -170,7 +165,6 @@
       box-shadow: 0 0 5px #fff, 0 0 15px var(--neon-color);
       animation: blink 1s infinite;
     }
-
     .dot.top { top: 30px; }
     .dot.bottom { bottom: 30px; }
 
@@ -198,10 +192,13 @@
 
   <!-- 설정 패널 -->
   <div id="controls">
-    <label>
-      네온 색상 🎨 
-      <input type="color" id="colorPicker" value="#00ffcc">
-    </label>
+    <div class="controls-header">
+      <label>
+        네온 색상 🎨 
+        <input type="color" id="colorPicker" value="#00ffcc">
+      </label>
+      <button id="resetBtn">위치 초기화 🎯</button>
+    </div>
     <div style="margin-top: 10px; font-size: 0.85rem; color: #ccc;">
       * 설정한 색상과 위치는 자동으로 저장됩니다.<br>
       * 가만히 두면 UI와 마우스 커서가 숨겨집니다.
@@ -215,41 +212,34 @@
   </div>
 
   <script>
-    // --- 1. 자동 숨김 (Idle Timeout) 로직 ---
+    // --- 1. 자동 숨김 로직 ---
     let idleTimer;
-    const idleWaitTime = 3000; // 3초 (3000ms) 뒤에 숨김 처리
+    const idleWaitTime = 3000; 
 
     function resetIdleTimer() {
-      // 움직임이 감지되면 idle 클래스 제거 (커서 및 UI 다시 표시)
       document.body.classList.remove('idle');
-      
-      // 기존 타이머 초기화
       clearTimeout(idleTimer);
-      
-      // 3초 동안 아무 입력이 없으면 idle 클래스 추가 (숨김)
       idleTimer = setTimeout(() => {
         document.body.classList.add('idle');
       }, idleWaitTime);
     }
 
-    // 마우스 이동, 터치, 클릭 등 이벤트 발생 시 타이머 초기화
     ['mousemove', 'mousedown', 'touchstart', 'touchmove', 'keydown'].forEach(event => {
       document.addEventListener(event, resetIdleTimer);
     });
-
-    // 시작할 때 바로 타이머 가동
     resetIdleTimer();
 
     // --- 2. 세븐 세그먼트 렌더링 로직 ---
     const digitMap = [
-      [1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 0, 0, 0, 0], [1, 1, 0, 1, 1, 0, 1], [1, 1, 1, 1, 0, 0, 1], [0, 1, 1, 0, 0, 1, 1],
-      [1, 0, 1, 1, 0, 1, 1], [1, 0, 1, 1, 1, 1, 1], [1, 1, 1, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 0, 1, 1]
+      [1,1,1,1,1,1,0], [0,1,1,0,0,0,0], [1,1,0,1,1,0,1], [1,1,1,1,0,0,1], [0,1,1,0,0,1,1],
+      [1,0,1,1,0,1,1], [1,0,1,1,1,1,1], [1,1,1,0,0,0,0], [1,1,1,1,1,1,1], [1,1,1,1,0,1,1]
     ];
 
     const timeWrapper = document.getElementById('time-display');
     const dateDisplay = document.getElementById('date-display');
     const widgetContainer = document.getElementById('widget-container');
     const colorPicker = document.getElementById('colorPicker');
+    const resetBtn = document.getElementById('resetBtn');
 
     function createDigitElement(id) {
       const digit = document.createElement('div');
@@ -321,11 +311,26 @@
       widgetContainer.style.top = savedY;
     }
 
-    // --- 5. 드래그 이동 ---
+    // --- 5. 위치 초기화 버튼 동작 ---
+    resetBtn.addEventListener('click', () => {
+      // 위치를 정가운데(50%)로 되돌리고 transform 속성 복구
+      widgetContainer.style.left = '50%';
+      widgetContainer.style.top = '50%';
+      widgetContainer.style.transform = 'translate(-50%, -50%)';
+      
+      // 로컬 스토리지에 저장된 위치 기록 삭제 (새로고침 시 정중앙 유지)
+      localStorage.removeItem('widgetX');
+      localStorage.removeItem('widgetY');
+    });
+
+    // --- 6. 드래그 이동 ---
     let isDragging = false, offsetX, offsetY;
 
     function startDrag(e) {
-      if(e.target.tagName.toLowerCase() === 'input') return; 
+      // 📌 색상 입력창이나 초기화 버튼을 눌렀을 때는 드래그 방지
+      const tagName = e.target.tagName.toLowerCase();
+      if(tagName === 'input' || tagName === 'button') return; 
+      
       isDragging = true;
       const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
       const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
