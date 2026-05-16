@@ -39,6 +39,18 @@
       }
     }
 
+    /* --- 마우스 & UI 자동 숨김 처리 (idle 상태) --- */
+    body.idle {
+      cursor: none !important; /* 마우스 커서 숨김 */
+    }
+    body.idle #widget-container {
+      cursor: none !important; /* 위젯 위에서도 커서 숨김 */
+    }
+    body.idle #controls {
+      opacity: 0 !important; /* 설정창 숨김 */
+      pointer-events: none; /* 숨겨진 상태에서는 클릭 방지 */
+    }
+
     /* 설정 패널 */
     #controls {
       position: absolute;
@@ -49,13 +61,10 @@
       padding: 15px;
       border-radius: 8px;
       z-index: 100;
-      opacity: 0; /* 모바일 대응을 위해 기본 투명도 낮춤 */
-      transition: opacity 0.3s ease-in-out;
+      opacity: 1; /* 기본적으로는 보임 */
+      transition: opacity 0.5s ease-in-out;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
-
-    /* 마우스를 올리거나, 모바일에서 터치했을 때 나타남 */
-    body:hover #controls, #controls:active { opacity: 1; }
 
     #controls label {
       display: flex;
@@ -86,7 +95,7 @@
       flex-direction: column; 
       align-items: center;
       gap: 15px; 
-      touch-action: none; /* 모바일 화면 스크롤 방지 */
+      touch-action: none; 
     }
 
     #widget-container:active {
@@ -170,7 +179,7 @@
       50%, 100% { opacity: 0.1; box-shadow: none; }
     }
 
-    /* 모바일 가로 모드 및 작은 화면 대응 */
+    /* 모바일 반응형 */
     @media (max-width: 768px) {
       .digit { width: 40px; height: 75px; }
       .seg-a, .seg-d, .seg-g { width: 25px; height: 8px; left: 8px; }
@@ -195,7 +204,7 @@
     </label>
     <div style="margin-top: 10px; font-size: 0.85rem; color: #ccc;">
       * 설정한 색상과 위치는 자동으로 저장됩니다.<br>
-      * PC와 모바일 모두 드래그를 지원합니다.
+      * 가만히 두면 UI와 마우스 커서가 숨겨집니다.
     </div>
   </div>
 
@@ -206,7 +215,32 @@
   </div>
 
   <script>
-    // --- 1. 세븐 세그먼트 렌더링 로직 ---
+    // --- 1. 자동 숨김 (Idle Timeout) 로직 ---
+    let idleTimer;
+    const idleWaitTime = 3000; // 3초 (3000ms) 뒤에 숨김 처리
+
+    function resetIdleTimer() {
+      // 움직임이 감지되면 idle 클래스 제거 (커서 및 UI 다시 표시)
+      document.body.classList.remove('idle');
+      
+      // 기존 타이머 초기화
+      clearTimeout(idleTimer);
+      
+      // 3초 동안 아무 입력이 없으면 idle 클래스 추가 (숨김)
+      idleTimer = setTimeout(() => {
+        document.body.classList.add('idle');
+      }, idleWaitTime);
+    }
+
+    // 마우스 이동, 터치, 클릭 등 이벤트 발생 시 타이머 초기화
+    ['mousemove', 'mousedown', 'touchstart', 'touchmove', 'keydown'].forEach(event => {
+      document.addEventListener(event, resetIdleTimer);
+    });
+
+    // 시작할 때 바로 타이머 가동
+    resetIdleTimer();
+
+    // --- 2. 세븐 세그먼트 렌더링 로직 ---
     const digitMap = [
       [1, 1, 1, 1, 1, 1, 0], [0, 1, 1, 0, 0, 0, 0], [1, 1, 0, 1, 1, 0, 1], [1, 1, 1, 1, 0, 0, 1], [0, 1, 1, 0, 0, 1, 1],
       [1, 0, 1, 1, 0, 1, 1], [1, 0, 1, 1, 1, 1, 1], [1, 1, 1, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 0, 1, 1]
@@ -253,7 +287,7 @@
       }
     }
 
-    // --- 2. 시간/날짜 업데이트 ---
+    // --- 3. 시간/날짜 업데이트 ---
     const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
     function updateWidget() {
       const now = new Date();
@@ -267,7 +301,7 @@
     }
     setInterval(updateWidget, 1000); updateWidget();
 
-    // --- 3. 로컬 스토리지 (저장 기능) 및 색상 변경 ---
+    // --- 4. 로컬 스토리지 (저장 기능) 및 색상 변경 ---
     const savedColor = localStorage.getItem('neonColor');
     if (savedColor) {
       document.documentElement.style.setProperty('--neon-color', savedColor);
@@ -279,7 +313,6 @@
       localStorage.setItem('neonColor', e.target.value);
     });
 
-    // 저장된 위치 불러오기
     const savedX = localStorage.getItem('widgetX');
     const savedY = localStorage.getItem('widgetY');
     if (savedX && savedY) {
@@ -288,7 +321,7 @@
       widgetContainer.style.top = savedY;
     }
 
-    // --- 4. 드래그 이동 (PC 마우스 + 모바일 터치 통합) ---
+    // --- 5. 드래그 이동 ---
     let isDragging = false, offsetX, offsetY;
 
     function startDrag(e) {
@@ -317,18 +350,15 @@
     function endDrag() {
       if (isDragging) {
         isDragging = false;
-        // 드래그가 끝나면 위치를 브라우저에 저장
         localStorage.setItem('widgetX', widgetContainer.style.left);
         localStorage.setItem('widgetY', widgetContainer.style.top);
       }
     }
 
-    // 마우스 이벤트
     widgetContainer.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', onDrag);
     document.addEventListener('mouseup', endDrag);
 
-    // 모바일 터치 이벤트
     widgetContainer.addEventListener('touchstart', startDrag, { passive: false });
     document.addEventListener('touchmove', onDrag, { passive: false });
     document.addEventListener('touchend', endDrag);
